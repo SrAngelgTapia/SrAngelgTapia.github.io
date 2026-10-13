@@ -82,6 +82,7 @@ dialog::backdrop { background: rgba(34,32,28,.55); }
 .amp dt { color: var(--suave); }
 .amp dd { margin: 0; }
 .amp .coment { font-size: 15px; line-height: 1.5; white-space: pre-wrap; border-left: 3px solid var(--acento); padding-left: 12px; }
+.cita { font-style: italic; font-size: 15px; line-height: 1.5; white-space: pre-wrap; margin: 10px 0 0; padding-left: 12px; border-left: 3px solid var(--linea, #ccc); }
 .amp .acciones { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
 .amp a, .amp button { font-size: 14px; text-decoration: none; border: 1px solid var(--linea); border-radius: 999px; padding: 7px 14px; background: var(--fondo); color: var(--texto); cursor: pointer; }
 .amp a.prin { background: var(--acento); border-color: var(--acento); color: #fff; }
@@ -219,7 +220,7 @@ function abrir(f) {
   const enObsidian = location.protocol === "file:" ? `<a class="prin" href="obsidian://open?vault=${encodeURIComponent(BOVEDA)}&file=${encodeURIComponent(f.ruta)}">Abrir en Obsidian</a>` : "";
   $("#dialogo").innerHTML = `<div class="amp">${cartel(f, true)}<div><h2>${titulo(f)}</h2><p class="sub">${f.puntuacion ? `${f.puntuacion} ` : ""}${esc(sub(f))}</p>
     <dl>${datos.map(([k, v]) => `<dt>${k}</dt><dd>${esc(v)}</dd>`).join("")}</dl>
-    ${f.motivo ? `<p class="sub">${esc(f.motivo)}</p>` : ""}${f.comentario ? `<p class="coment">${esc(f.comentario)}</p>` : ""}
+    ${f.motivo ? `<p class="sub">${esc(f.motivo)}</p>` : ""}${f.comentario ? `<p class="coment">${esc(f.comentario)}</p>` : ""}${f.citas ? f.citas.map(c => `<blockquote class="cita">${esc(c)}</blockquote>`).join("") : ""}
     <div class="acciones">${enObsidian}<button id="otra" hidden>🎲 Otra</button><button id="cerrar">Cerrar</button></div></div></div>`;
   $("#cerrar").onclick = () => $("#dialogo").close();
   $("#dialogo").showModal();
