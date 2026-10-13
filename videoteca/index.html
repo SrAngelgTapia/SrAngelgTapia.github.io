@@ -201,12 +201,25 @@ const VISTAS = {
     const año = {}; FICHAS.filter(f => f.fecha_vista).forEach(f => { const a = f.fecha_vista.slice(0, 4); año[a] = (año[a] || 0) + 1; });
     const dir = {}; FICHAS.filter(f => f.estado === "vista" && f.director).forEach(f => dir[f.director] = (dir[f.director] || 0) + 1);
     const media = l => (l.reduce((s, f) => s + (f.nota || 0), 0) / (l.length || 1)).toFixed(1);
+    const leidos = FICHAS.filter(f => esLibro(f) && f.estado === "leído");
+    const mes = {}; leidos.filter(f => f.fecha_vista).forEach(f => { const m = f.fecha_vista.slice(0, 7); mes[m] = (mes[m] || 0) + 1; });
+    const nomMes = m => new Date(m + "-15").toLocaleDateString("es-ES", {month: "short", year: "numeric"});
+    const aut = {}; leidos.filter(f => f.autor).forEach(f => aut[f.autor] = (aut[f.autor] || 0) + 1);
+    const tard = leidos.filter(f => f.fecha_inicio && f.fecha_vista).map(f => [f, Math.round((new Date(f.fecha_vista) - new Date(f.fecha_inicio)) / 864e5) + 1]).sort((a, b) => a[1] - b[1]);
+    const ritmo = tard.length ? `<p>De media, <b>${Math.round(tard.reduce((s, t) => s + t[1], 0) / tard.length)} días</b> por libro (${tard.length} con fecha de inicio).</p>`
+      + (tard.length > 1 ? `<p>El más rápido: ${esc(tard[0][0].titulo)}, ${tard[0][1]} días. El más lento: ${esc(tard.at(-1)[0].titulo)}, ${tard.at(-1)[1]} días.</p>` : "")
+      : '<p class="vacio">Saldrá cuando acabes un libro que hayas fichado con «📖 Empezado».</p>';
     return `<section><h2>Estadísticas</h2><p class="sub">Nota media: películas ${media(vistas)} · series ${media(series)}.</p>
       <div class="cols"><div><h3 class="cab">Películas por puntuación</h3>${barras(NIVELES.map(([e, n]) => [`${e} ${n}`, vistas.filter(f => f.puntuacion === e).length]))}</div>
       <div><h3 class="cab">Series por puntuación</h3>${barras(NIVELES.map(([e, n]) => [`${e} ${n}`, series.filter(f => f.puntuacion === e).length]), "b2")}</div>
       <div><h3 class="cab">Películas vistas por década</h3>${barras(Object.entries(dec).sort(), "b2")}</div>
       <div><h3 class="cab">Fichadas por año</h3>${Object.keys(año).length ? barras(Object.entries(año).sort()) : '<p class="vacio">Se irá llenando a medida que fiches con fecha.</p>'}</div>
-      ${Object.keys(dir).length ? `<div><h3 class="cab">Directores más vistos</h3>${barras(Object.entries(dir).sort((a, b) => b[1] - a[1]).slice(0, 10), "b2")}</div>` : ""}</div></section>`;
+      ${Object.keys(dir).length ? `<div><h3 class="cab">Directores más vistos</h3>${barras(Object.entries(dir).sort((a, b) => b[1] - a[1]).slice(0, 10), "b2")}</div>` : ""}</div></section>
+      <section><h2>Libros</h2><p class="sub">Nota media: ${media(leidos.filter(f => f.nota))} · ${leidos.length} leídos.</p>
+      <div class="cols"><div><h3 class="cab">Libros por puntuación</h3>${barras(NIVELES_LIBROS.map(([e, n]) => [`${e} ${n}`, leidos.filter(f => f.puntuacion === e).length]))}</div>
+      <div><h3 class="cab">Leídos por mes</h3>${Object.keys(mes).length ? barras(Object.entries(mes).sort().slice(-12).map(([m, n]) => [nomMes(m), n]), "b2") : '<p class="vacio">Se irá llenando a medida que fiches libros acabados.</p>'}</div>
+      <div><h3 class="cab">Lo que tardas</h3>${ritmo}</div>
+      ${Object.keys(aut).length ? `<div><h3 class="cab">Autores más leídos</h3>${barras(Object.entries(aut).sort((a, b) => b[1] - a[1]).slice(0, 10), "b2")}</div>` : ""}</div></section>`;
   },
   todo() { return `<section><h2>Resultados</h2>${lista(FICHAS.filter(coincide).sort(porNota))}</section>`; },
 };
